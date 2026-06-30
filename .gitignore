@@ -1,0 +1,17 @@
+# Entornos virtuales
+venv/
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo 
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Datos sensibles (el CSV original se puede subir, es público)
+*.log
+
+# VS Code
+.vscode/
