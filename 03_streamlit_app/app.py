@@ -81,7 +81,7 @@ with tab1:
     # ── Distribución del target ──────────────────────────────
     st.subheader("Distribución del target")
 
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(6, 3))
     sns.countplot(
         data=df,
         x='HeartDisease',
@@ -94,7 +94,10 @@ with tab1:
     ax.set_xlabel("")
     ax.set_ylabel("Número de pacientes")
     ax.set_xticklabels(['Sin enfermedad (0)', 'Con enfermedad (1)'])
-    st.pyplot(fig)
+
+    col_left, col_center, col_right = st.columns([1, 3, 1])
+    with col_center:
+        st.pyplot(fig)
     plt.close(fig)
 
     target_pct = df['HeartDisease'].value_counts(normalize=True) * 100
@@ -113,7 +116,7 @@ with tab1:
     num_cols = [c for c in ['Age', 'RestingBP', 'Cholesterol', 'MaxHR', 'Oldpeak'] if c in df.columns]
     selected_num = st.selectbox("Selecciona una variable numérica", options=num_cols)
 
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(6, 3))
     sns.histplot(
         data=df,
         x=selected_num,
@@ -127,7 +130,10 @@ with tab1:
     ax.set_title(f"Distribución de {selected_num} por clase")
     ax.set_xlabel(selected_num)
     ax.set_ylabel("Frecuencia")
-    st.pyplot(fig)
+
+    col_left, col_center, col_right = st.columns([1, 3, 1])
+    with col_center:
+        st.pyplot(fig)
     plt.close(fig)
 
     st.divider()
@@ -147,7 +153,7 @@ with tab1:
         .sort_values(selected_cat)
     )
 
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(6, 3))
     bars = sns.barplot(data=risk_by_cat, x=selected_cat, y='HeartDisease', ax=ax)
     for bar, color in zip(ax.patches, ['#4C72B0', '#C44E52']):
         bar.set_facecolor(color)
@@ -157,7 +163,10 @@ with tab1:
     ax.set_xlabel(selected_cat)
     ax.set_ylabel("Pacientes con enfermedad (%)")
     ax.set_xticklabels(["No", "Sí"])
-    st.pyplot(fig)
+
+    col_left, col_center, col_right = st.columns([1, 3, 1])
+    with col_center:
+        st.pyplot(fig)
     plt.close(fig)
 
     st.caption(
@@ -295,13 +304,17 @@ with tab3:
     st.divider()
 
     st.subheader("Curvas ROC — comparativa de modelos")
-    st.image(str(BASE_DIR / 'plots' / '10_roc_curves.png'))
+    col_left, col_center, col_right = st.columns([1, 3, 1])
+    with col_center:
+        st.image(str(BASE_DIR / 'plots' / '10_roc_curves.png'))
     st.caption("Cada curva representa un modelo. Cuanto mayor el área bajo la curva (AUC), mejor la capacidad discriminativa.")
 
     st.divider()
 
     st.subheader("Importancia de features")
-    st.image(str(BASE_DIR / 'plots' / '12_feature_importance.png'))
+    col_left, col_center, col_right = st.columns([1, 2, 1])
+    with col_center:
+        st.image(str(BASE_DIR / 'plots' / '12_feature_importance.png'))
     st.caption(
         "ST_Slope_Up domina con ~50% de importancia: su ausencia es un marcador clásico de isquemia miocárdica. "
         "MaxHR y Oldpeak reflejan la respuesta al esfuerzo. ChestPainType y Sex completan el perfil de riesgo cardiovascular."
@@ -310,7 +323,9 @@ with tab3:
     st.divider()
 
     st.subheader("Matrices de confusión")
-    st.image(str(BASE_DIR / 'plots' / '11_confusion_matrices.png'))
+    col_left, col_center, col_right = st.columns([0.5, 4, 0.5])
+    with col_center:
+        st.image(str(BASE_DIR / 'plots' / '11_confusion_matrices.png'))
     st.caption(
         "Los Falsos Negativos (FN) — pacientes enfermos clasificados como sanos — son el error más costoso "
         "en contexto clínico. El modelo prioriza minimizarlos mediante un Recall alto en la clase positiva."
