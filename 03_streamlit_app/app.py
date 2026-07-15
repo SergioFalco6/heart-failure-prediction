@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 from pathlib import Path
+import shap
 
 # ── Configuración de página ──────────────────────────────────
 # Debe ser la primera instrucción de Streamlit en el script.
@@ -40,6 +41,9 @@ BASE_DIR = Path(__file__).parent.parent
 def load_model():
     return joblib.load(BASE_DIR / 'models' / 'best_model_gradient_boosting.pkl')
 
+def load_explainer():
+    return joblib.load(BASE_DIR / 'models' / 'shap_explainer.pkl')
+
 @st.cache_data
 def load_data():
     df = pd.read_csv(BASE_DIR / 'heart_processed.csv')
@@ -47,6 +51,7 @@ def load_data():
     return df, feature_names
 
 model = load_model()
+explainer = load_explainer()
 df, feature_names = load_data()
 
 # ── Header ───────────────────────────────────────────────────
@@ -287,6 +292,28 @@ with tab2:
             "Cualquier resultado debe interpretarse junto con la historia clínica completa del paciente.**"
         )
 
+        # ── Explicación SHAP individual ───────────────────────────────────── 
+        # Explicabilidad de por qué el modelo ha dado dicho resultado en esta predicción
+        st.divider()
+        st.subheader("¿Por qué el modelo ha tomado esta decisión?")
+
+        shap_values = explainer.shap_values(input_df_encoded)
+
+        shap.plots.waterfall(
+            shap.Explanation(
+                values=shap_values[0],
+                base_values=float(explainer.expected_value[0]),
+                data=input_df_encoded.iloc[0],
+                feature_names=feature_names
+            ),
+            show=False
+        )
+
+        col_left, col_center, col_right = st.columns([1, 3, 1])
+        with col_center:
+            st.pyplot(plt.gcf())
+            plt.close()
+
 
 # ════════════════════════════════════════════════════════════
 # TAB 3 — MÉTRICAS DEL MODELO
@@ -302,7 +329,6 @@ with tab3:
     col3.metric("Accuracy", "0.8913", help="Porcentaje de predicciones correctas.")
 
     st.divider()
-
     st.subheader("Curvas ROC — comparativa de modelos")
     col_left, col_center, col_right = st.columns([1, 3, 1])
     with col_center:
@@ -310,7 +336,6 @@ with tab3:
     st.caption("Cada curva representa un modelo. Cuanto mayor el área bajo la curva (AUC), mejor la capacidad discriminativa.")
 
     st.divider()
-
     st.subheader("Importancia de features")
     col_left, col_center, col_right = st.columns([1, 2, 1])
     with col_center:
@@ -321,7 +346,6 @@ with tab3:
     )
 
     st.divider()
-
     st.subheader("Matrices de confusión")
     col_left, col_center, col_right = st.columns([0.5, 4, 0.5])
     with col_center:
@@ -329,6 +353,18 @@ with tab3:
     st.caption(
         "Los Falsos Negativos (FN) — pacientes enfermos clasificados como sanos — son el error más costoso "
         "en contexto clínico. El modelo prioriza minimizarlos mediante un Recall alto en la clase positiva."
+    )
+
+    st.divider()
+    st.subheader("SHAP - Importancia global de features")
+    col_left, col_center, col_right = st.columns([1, 2, 1])
+    with col_center:
+        st.image(str(BASE_DIR / 'plots' / '13_shap_beeswarm.png'))
+    st.caption(
+        "Cada punto representa un paciente del test set. "
+        "El color indica el valor de la feature (rojo=alto, azul=bajo). "
+        "La posicióon horizontal indica el impacto en la predicción: "
+        "valores positivos empujan hacia enfermedad, negativos hacia sano."
     )
 
 
